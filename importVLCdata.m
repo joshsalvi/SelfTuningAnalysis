@@ -66,7 +66,7 @@ clear data2 data
 
 % Import time traces
 for j = 1:a
-    for i = 1:(logdata.data(1,1))
+    for i = 1:(logdata.data(1,8))
         Xd(:,i,j) = data0(:,(1+i),j);   % photodiode
         Xo(:,i,j) = data0(:,(1+logdata.data(1,1)+i),j);  % stimulus piezo
     end
@@ -74,7 +74,7 @@ end
 
 % Extract pulses from full time traces
 for j = 1:a
-    for i = 1:(logdata.data(1,1))
+    for i = 1:(logdata.data(1,8))
         Xd_pulse(:,i,j) = Xd(1+pre:pre+pulse,i,j);  % photodiode, stimulation only
         Xo_pulse(:,i,j) = Xo(1+pre:pre+pulse,i,j);  % stimulus piezo, stimulation only
     end
