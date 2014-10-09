@@ -1,4 +1,4 @@
-function importVLCdata(datapath)
+function importVLCdata2(datapath)
 % This script imports data, without spacefiles, LabVIEW's
 % variableloadclamp.vi to MATLAB. You will need to input the full directory
 % name containing all files with your data, including the logfile.
@@ -29,7 +29,6 @@ comments = logdata.textdata{2}; % import comments
 Fs = logdata.data(1,12);       % scan rate (Hz), CHECK THIS!
 pre = logdata.data(1,22)*1e-3*Fs;   % delay before a stimulus, CHECK THIS!
 pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
-time = 
 % Note that some logfiles will have formatting issues and the indices
 % listed above may be off by ±10 in certain cases. If this is true, open
 % logdata.data and modify the script accordingly.
@@ -63,7 +62,7 @@ end
 
 
 for i =1:a
-    data0{i}=data2.data(:,:,i);     % extract data from its structure format (not necessary, but easier)
+    data0{i}=data2{i}.data;     % extract data from its structure format (not necessary, but easier)
 end
 clear data2 data 
 %}
