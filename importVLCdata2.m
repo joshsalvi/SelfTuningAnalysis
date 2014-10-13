@@ -39,28 +39,6 @@ for i = 1:a
 data2{i}=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
 end
 
-%{
-if i<a
-    data2.data{i}=data.data;    % assign with proper indexing
-else
-    if length(data.data(:,1,1))<length(data2.data{i})   % search for length discrepancies and initialize with zeros
-        data.data(length(data2.data(:,1,1)),:)=0;
-        for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
-           data.data(:,j)=zeros(1,length(data2.data(:,:)));
-        end
-        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
-    else
-        for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
-           data.data(:,j)=zeros(1,length(data2.data(:,:)));
-        end
-        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
-    end
-end
- 
-end
-%}
-
-
 for i =1:a
     data0{i}=data2{i}.data;     % extract data from its structure format (not necessary, but easier)
 end
