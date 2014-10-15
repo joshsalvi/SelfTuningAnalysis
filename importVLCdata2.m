@@ -25,7 +25,7 @@ a = length(file);       % number of sessions in the directory
 
 % Import logdata
 logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
-comments = logdata.textdata(:,3); % import comments
+comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
 Fs = logdata.data(1,12);       % scan rate (Hz), CHECK THIS!
 pre = logdata.data(1,22)*1e-3*Fs;   % delay before a stimulus, CHECK THIS!
 pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
@@ -41,7 +41,7 @@ for j = 1:a
 end
 nonraw = find(rawfiles==1);raw = find(rawfiles==0);
 for j = 1:length(raw)
-    ntraceraw(j) = ntrace(find(nonraw==raw(j)+1));
+    ntraceraw(j) = ntrace(nonraw==raw(j)+1);
 end
 
 % Import the data, some of this may be redundant
