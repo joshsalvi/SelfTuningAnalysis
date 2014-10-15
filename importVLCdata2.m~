@@ -55,40 +55,32 @@ end
 clear data2 data 
 %}
 % Import non-raw time traces
-k=1;
 for j = nonraw
-    for i = 1:ntrace(k)
-        Xd{i,j} = data0{j}(:,(1+i));   % photodiode
-        Xo{i,j} = data0{j}(:,(1+ntrace(k)+i));  % stimulus piezo
-    end
-    k=k+1;
+        for i = 1:ntrace(j)
+            Xd{i,j} = data0{j}(:,(1+i));   % photodiode
+            Xo{i,j} = data0{j}(:,(1+ntrace(j)+i));  % stimulus piezo
+        end
 end
 % Extract pulses from full time traces
-k=1;
 for j = nonraw
-    for i = 1:ntrace(k)
+    for i = 1:ntrace(j)
         Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
         Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
     end
-    k=k+1;
 end
 % Import non-raw time traces
-k=1;
 for j = raw
-    for i = 1:ntraceraw(k)
-        Xd{i,j} = data0{j}(:,(i));   % photodiode
-        Xo{i,j} = data0{j}(:,(ntraceraw(k)+i));  % stimulus piezo
-    end
-    k=k+1;
+        for i = 1:ntrace(j)
+            Xd{i,j} = data0{j}(:,(i));   % photodiode
+            Xo{i,j} = data0{j}(:,(ntrace(j)+i));  % stimulus piezo
+        end
 end
 % Extract pulses from full time traces
-k=1;
 for j = raw
-    for i = 1:ntraceraw(k)
+    for i = 1:ntrace(j)
         Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
         Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
     end
-    k=k+1;
 end
 
 
