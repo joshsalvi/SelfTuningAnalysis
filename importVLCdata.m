@@ -1,4 +1,4 @@
-function importVLCdata(datapath)
+function importVLCdata(datapath,MSVLC)
 % This script imports data, without spacefiles, LabVIEW's
 % variableloadclamp.vi to MATLAB. You will need to input the full directory
 % name containing all files with your data, including the logfile.
@@ -6,6 +6,7 @@ function importVLCdata(datapath)
 % importVLCdata(datapath)
 %
 % datapath : string of the path containing your data
+% MSVLC : Mech Stim or VLC? (1=VLC, 2=Mech Stim)
 %
 % Example:
 % importVLCdata('/Users/username/Data/2014-09-30.01/Ear 1/Cell 2/')
@@ -19,9 +20,15 @@ function importVLCdata(datapath)
 %
 
 % Find all appropriate files
-file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
-logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
-a = length(file);       % number of sessions in the directory
+if MSVLC==1
+    file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
+    logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
+    a = length(file);       % number of sessions in the directory
+elseif MSVLC==2
+    file = dir(sprintf('%s%s',datapath,'*MS*.txt'));   % find all data files
+    logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
+    a = length(file);       % number of sessions in the directory
+end
 
 % Import logdata
 logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
@@ -37,8 +44,9 @@ pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
 % Import the data, some of this may be redundant
 for i = 1:a
 data=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
- 
-if i<a
+if a==1
+    data2.data(:,:,i)=data.data; 
+elseif i<a
     data2.data(:,:,i)=data.data;    % assign with proper indexing
 else
     if length(data.data(:,1,1))<length(data2.data(:,1,1))   % search for length discrepancies and initialize with zeros
@@ -65,10 +73,19 @@ end
 clear data2 data 
 
 % Import time traces
-for j = 1:a
+if MSVLC==1
+    for j = 1:a
     for i = 1:(logdata.data(1,8))
         Xd(:,i,j) = data0(:,(1+i),j);   % photodiode
-        Xo(:,i,j) = data0(:,(1+logdata.data(1,1)+i),j);  % stimulus piezo
+        Xo(:,i,j) = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+    end
+    end
+elseif MSVLC==2
+    for j = 1:a
+    for i = 1:(logdata.data(1,8))
+        Xo(:,i,j) = data0(:,(1+i),j);   % photodiode
+        Xd(:,i,j) = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+    end
     end
 end
 
