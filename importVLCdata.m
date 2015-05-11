@@ -3,7 +3,7 @@ function importVLCdata(datapath,MSVLC)
 % variableloadclamp.vi to MATLAB. You will need to input the full directory
 % name containing all files with your data, including the logfile.
 %
-% importVLCdata(datapath)
+% importVLCdata(datapath,MSVLC)
 %
 % datapath : string of the path containing your data
 % MSVLC : Mech Stim or VLC? (1=VLC, 2=Mech Stim)
@@ -76,26 +76,28 @@ clear data2 data
 if MSVLC==1
     for j = 1:a
     for i = 1:(logdata.data(1,8))
-        Xd(:,i,j) = data0(:,(1+i),j);   % photodiode
-        Xo(:,i,j) = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+        Xd{i,j} = data0(:,(1+i),j);   % photodiode
+        Xo{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
     end
     end
 elseif MSVLC==2
     for j = 1:a
     for i = 1:(logdata.data(1,8))
-        Xo(:,i,j) = data0(:,(1+i),j);   % photodiode
-        Xd(:,i,j) = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+        Xo{i,j} = data0(:,(1+i),j);   % photodiode
+        Xd{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
     end
     end
 end
 
+
 % Extract pulses from full time traces
 for j = 1:a
     for i = 1:(logdata.data(1,8))
-        Xd_pulse(:,i,j) = Xd(1+pre:pre+pulse,i,j);  % photodiode, stimulation only
-        Xo_pulse(:,i,j) = Xo(1+pre:pre+pulse,i,j);  % stimulus piezo, stimulation only
+        Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
+        Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
     end
 end
+%}
 
 % Save extracted data
 disp('Saving...');

@@ -1,4 +1,4 @@
-function importVLCdata3(datapath)
+function importVLCdata3(datapath,MSVLC)
 % This script imports data, without spacefiles, LabVIEW's
 % variableloadclamp.vi to MATLAB. You will need to input the full directory
 % name containing all files with your data, including the logfile.
@@ -6,6 +6,7 @@ function importVLCdata3(datapath)
 % importVLCdata(datapath)
 %
 % datapath : string of the path containing your data
+% MSVLC : Mech Stim or VLC? (1=VLC, 2=Mech Stim)
 %
 % Example:
 % importVLCdata('/Users/username/Data/2014-09-30.01/Ear 1/Cell 2/')
@@ -17,6 +18,18 @@ function importVLCdata3(datapath)
 %
 % jsalvi@rockefeller.edu
 %
+
+
+% Find all appropriate files
+if MSVLC==1
+    file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
+    logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
+    a = length(file);       % number of sessions in the directory
+elseif MSVLC==2
+    file = dir(sprintf('%s%s',datapath,'*MS*.txt'));   % find all data files
+    logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
+    a = length(file);       % number of sessions in the directory
+end
 
 % Find all appropriate files
 file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
