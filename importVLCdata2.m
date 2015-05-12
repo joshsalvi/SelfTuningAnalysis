@@ -39,7 +39,7 @@ a = length(file);       % number of sessions in the directory
 
 % Import logdata
 logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
-comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
+%comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
 Fs = logdata.data(1,12);       % scan rate (Hz), CHECK THIS!
 for j = 1:a
 pre(j) = logdata.data(j,22)*1e-3*Fs;   % delay before a stimulus, CHECK THIS!

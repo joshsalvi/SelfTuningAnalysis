@@ -56,12 +56,14 @@ for j = 1:a
     rawfiles(j) = isempty(findstr(file(j).name,'raw'));
 end
 nonraw = find(rawfiles==1);raw = find(rawfiles==0);
-ntraceraw = ntrace(ntrace~=0);
-numavgraw = numavg(numavg~=0);
+for j = 1:length(raw)
+    ntraceraw(j) = ntrace(nonraw==raw(j)+1);
+    numavgraw = numavg(numavg~=0);
+end
 
 % Import the data, some of this may be redundant
 for i = 1:a
-    data2{i}=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
+data2{i}=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
 end
 
 for i =1:a
@@ -119,6 +121,7 @@ for j = raw
     end
     mm=mm+1;
 end
+(1+(i-1)*pre(mm)+(i-1)*(pre(mm)+pulse(mm)+post(mm))):(1+(i-1)*pre(mm)+i*(pre(mm)+pulse(mm)+post(mm)))
 
 clear i j 
 
