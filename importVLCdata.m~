@@ -1,9 +1,9 @@
-function importVLCdata4(datapath,MSVLC)
+function importVLCdata(datapath,MSVLC)
 % This script imports data, without spacefiles, LabVIEW's
 % variableloadclamp.vi to MATLAB. You will need to input the full directory
 % name containing all files with your data, including the logfile.
 %
-% importVLCdata(datapath)
+% importVLCdata(datapath,MSVLC)
 %
 % datapath : string of the path containing your data
 % MSVLC : Mech Stim or VLC? (1=VLC, 2=Mech Stim)
@@ -19,7 +19,6 @@ function importVLCdata4(datapath,MSVLC)
 % jsalvi@rockefeller.edu
 %
 
-
 % Find all appropriate files
 if MSVLC==1
     file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
@@ -31,14 +30,9 @@ elseif MSVLC==2
     a = length(file);       % number of sessions in the directory
 end
 
-% Find all appropriate files
-file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
-logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
-a = length(file);       % number of sessions in the directory
-
 % Import logdata
 logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
-%comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
+%comments = logdata.textdata{2}; % import comments
 Fs = logdata.data(1,12);       % scan rate (Hz), CHECK THIS!
 pre = logdata.data(1,22)*1e-3*Fs;   % delay before a stimulus, CHECK THIS!
 pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
@@ -46,67 +40,65 @@ pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
 % listed above may be off by ±10 in certain cases. If this is true, open
 % logdata.data and modify the script accordingly.
 
-%Number of traces
-ntrace=logdata.data(isnan(logdata.data(:,8))==0,9);
-% Find all raw files
-for j = 1:a
-    rawfiles(j) = isempty(findstr(file(j).name,'raw'));
-end
-nonraw = find(rawfiles==1);raw = find(rawfiles==0);
-
-j=1;
-    ntraceraw = ntrace;
 
 % Import the data, some of this may be redundant
 for i = 1:a
-data2{i}=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
+data=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
+if a==1
+    data2.data(:,:,i)=data.data; 
+elseif i<a
+    sizeD=size(data2.data);
+    data2.data(:,:,i)=data.data(1:sizeD(1),1:sizeD(2));    % assign with proper indexing
+else
+    if length(data.data(:,1,1))<length(data2.data(:,1,1))   % search for length discrepancies and initialize with zeros
+        data.data(length(data2.data(:,1,1)),:)=0;
+        for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
+           data.data(:,j)=zeros(1,length(data2.data(:,:)));
+        end
+        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
+    else
+        for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
+           data.data(:,j)=zeros(1,length(data2.data(:,:)));
+        end
+        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
+    end
 end
+ 
+end
+
+time = data2.data(:,1);    % time vector
 
 for i =1:a
-    data0{i}=data2{i}.data;     % extract data from its structure format (not necessary, but easier)
+    data0(:,:,i)=data2.data(:,:,i);     % extract data from its structure format (not necessary, but easier)
 end
 clear data2 data 
-%}
-% Import non-raw time traces
-k=1;
-for j = nonraw
-    for i = 1:ntrace
-        Xd{i,j} = data0{j}(:,(1+i));   % photodiode
-        Xo{i,j} = data0{j}(:,(1+ntrace+i));  % stimulus piezo
-    end
-    k=k+1;
-end
-% Extract pulses from full time traces
-k=1;
-for j = nonraw
-    for i = 1:ntrace
-        Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
-        Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
-    end
-    k=k+1;
-end
-% Import raw time traces
-k=1;
-for j = raw
-    for i = 1:size(data0{j},2)
-        Xd{i,j} = data0{j}(:,(i));   % photodiode
-        Xo{i,j} = data0{j}(:,(i));  % stimulus piezo
-    end
-    k=k+1;
-end
-% Extract pulses from full time traces
-%{
-k=1;
-for j = raw
-    for i = 1:size(Xd,1)
-        Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
-        Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
-    end
-    k=k+1;
-end
-%}
 
-clear i j 
+% Import time traces
+if MSVLC==1
+    for j = 1:a
+    for i = 1:(logdata.data(1,8))
+        Xd{i,j} = data0(:,(1+i),j);   % photodiode
+        Xo{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+    end
+    end
+elseif MSVLC==2
+    for j = 1:a
+    for i = 1:(logdata.data(1,8))
+        Xo{i,j} = data0(:,(1+i),j);   % photodiode
+        Xd{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+    end
+    end
+end
+
+
+% Extract pulses from full time traces
+for j = 1:a
+    for i = 1:(logdata.data(1,8))
+        Xd_pulse{i,j} = Xd{i,j}(1+pre:pre+pulse);  % photodiode, stimulation only
+        Xo_pulse{i,j} = Xo{i,j}(1+pre:pre+pulse);  % stimulus piezo, stimulation only
+    end
+end
+%}
 
 % Save extracted data
 disp('Saving...');
