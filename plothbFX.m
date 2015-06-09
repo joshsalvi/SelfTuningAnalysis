@@ -237,6 +237,7 @@ end
 elseif mm == 1
     
     % Time vector
+    clear dt tvec
     dt = 1/Fs;
     tvec = 0:dt:length(Xd_pulse{1,ind})*dt-dt;
     

@@ -122,15 +122,6 @@ for j = raw
     mm=mm+1;
 end
 
-% Time vector
-dt = 1/Fs;
-sizeX = size(Xd);
-for j = 1:sizeX(1)
-    for k = 1:sizeX(2)
-        tvec{j,k} = 0:dt:length(Xd{j,k})*dt-dt;
-    end
-end
-
 clear i j 
 
 % Save extracted data
