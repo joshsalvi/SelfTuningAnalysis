@@ -132,7 +132,7 @@ if forces == 1
         if length(forcerange) ~= length(xddiffmean)
             disp('Incorrect number of forces.')
         else
-            return;
+            %return;
         end
     end
     subplot(2,2,2);
@@ -169,7 +169,7 @@ if forces == 1
         disp(['R2 = ' num2str(gof.rsquare)]);
         mm=mm+1;
     end
-    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmean-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);
+    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmean-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N) = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);disp(['Kinf = ' num2str(fitobj.kinf)]);
     Ff=fitobj.kinf.*xddiffmean-fitobj.N*fitobj.z.*Po+fitobj.F0;
     hrt(4)=figure(4);set(4,'WindowStyle','docked');
     plot(xddiffmean,Po,'LineWidth',2,'Color','b');
@@ -217,7 +217,7 @@ else
         disp(['R2 = ' num2str(gof.rsquare)]);
         mm=mm+1;
     end
-    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmean-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);
+    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmean-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N) = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);disp(['Kinf = ' num2str(fitobj.kinf)]);
     Ff=fitobj.kinf.*xddiffmean-fitobj.N*fitobj.z.*Po+fitobj.F0;
     hrt(4)=figure(4);set(4,'WindowStyle','docked');
     plot(xddiffmean,Po,'LineWidth',2,'Color','b');
@@ -342,11 +342,8 @@ if forces == 1
         forcerange = input('Forces (pN): ');
         if length(forcerange) ~= length(xddiffmeanavg)
             disp('Incorrect number of forces.')
-        else
-            return;
         end
     end
-    hrt(3)=figure(3);
     subplot(2,2,2);
     plot(xddiffmeanavg,forcerange,'r:','LineWidth',2); hold on;
     herrorbar(xddiffmeanavg,forcerange,xddiffsemerr,'b.');
@@ -382,7 +379,7 @@ if forces == 1
         disp(['R2 = ' num2str(gof.rsquare)]);
         mm=mm+1;
     end
-    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmeanavg-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);
+    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmeanavg-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N) = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);disp(['Kinf = ' num2str(fitobj.kinf)]);
     Ff=fitobj.kinf.*xddiffmeanavg-fitobj.N*fitobj.z.*Po+fitobj.F0;
     hrt(4)=figure(4);set(4,'WindowStyle','docked');
     plot(xddiffmeanavg,Po,'LineWidth',2,'Color','b');
@@ -432,7 +429,7 @@ else
         disp(['R2 = ' num2str(gof.rsquare)]);
         mm=mm+1;
     end
-    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmeanavg-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);
+    close(6);fitobj.z=abs(fitobj.z);Po=1./(1+exp(-fitobj.z.*(xddiffmeanavg-fitobj.x0)./4.11));disp(['z = ' num2str(fitobj.z)]);disp(['sqrt(4*k*T*Kinf/N) = ' num2str(sqrt(4*4.11*fitobj.kinf/fitobj.N))]);disp(['Kinf = ' num2str(fitobj.kinf)]);
     Ff=fitobj.kinf.*xddiffmeanavg-fitobj.N*fitobj.z.*Po+fitobj.F0;
     hrt(4)=figure(4);set(4,'WindowStyle','docked');
     plot(xddiffmeanavg,Po,'LineWidth',2,'Color','b');
