@@ -44,6 +44,8 @@ pre = logdata.data(:,22)*1e-3*Fs;   % delay before a stimulus, CHECK THIS!
 pulse = logdata.data(:,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
 pulselength = logdata.data(:,3)*1e-3*Fs;
 post = pulselength - pre - pulse;
+
+
 % Note that some logfiles will have formatting issues and the indices
 % listed above may be off by ±10 in certain cases. If this is true, open
 % logdata.data and modify the script accordingly.
@@ -77,15 +79,26 @@ for j = nonraw
     for i = 1:ntrace(k)
         Xd{i,j} = data0{j}(:,(1+i));   % photodiode
         Xo{i,j} = data0{j}(:,(1+ntrace(k)+i));  % stimulus piezo
+       
+    end
+    if size(data0{j},2)>1+2*ntrace(k)
+        sizen = size(data0{j},2);
+        for i = 1:size(data0{j},2)-(1+2*ntrace(k))
+            Fe{i,j} = data0{j}(:,(1+2*ntrace(k)+i));
+        end
     end
     k=k+1;
 end
+
 % Extract pulses from full time traces
 k=1;
 for j = nonraw
     for i = 1:ntrace(k)
         Xd_pulse{i,j} = Xd{i,j};  % photodiode, stimulation only
         Xo_pulse{i,j} = Xo{i,j};  % stimulus piezo, stimulation only
+        if size(data0{j},2)>1+2*ntrace(k)
+            Fe_pulse{i,j} = Fe{i,j};
+        end
     end
     k=k+1;
 end
@@ -96,8 +109,26 @@ for j = raw
         Xd{i,j} = data0{j}(:,1);   % photodiode
         Xo{i,j} = data0{j}(:,2);  % stimulus piezo
     end
+    if size(data0{j},2)>1+2*ntrace(k)
+        sizen = size(data0{j},2);
+        for i = 1:size(data0{1},2)-(1+2*ntrace(k))
+            Fe{i,j} = data0{j}(:,(1+2*ntrace(k)+i));
+        end
+    end
     k=k+1;
 end
+
+if size(Fe,1) > size(Xd,1)
+    for j = 1:size(Xd,1)
+        for k = nonraw
+            kv{j,k} = Fe{j,k};
+            Fe2{j,k} = Fe{j+size(Xd,1),k};
+        end
+    end
+    Fe = Fe2; clear Fe2
+end
+
+
 % Extract pulses from full time traces
 
 mm=1;

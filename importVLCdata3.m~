@@ -77,9 +77,17 @@ for j = nonraw
     for i = 1:ntrace(k)
         Xd{i,j} = data0{j}(:,(1+i));   % photodiode
         Xo{i,j} = data0{j}(:,(1+ntrace(k)+i));  % stimulus piezo
+       
+    end
+    if size(data0{j},2)>1+2*ntrace(k)
+        sizen = size(data0{j},2)
+        for i = 1:size(data0{1},2)-(1+2*ntrace(k))
+            Fe{i,j} = data0{j}(:,(1+2*ntrace(k)+i));
+        end
     end
     k=k+1;
 end
+
 % Extract pulses from full time traces
 k=1;
 for j = nonraw
@@ -120,6 +128,15 @@ for j = raw
         end
     end
     mm=mm+1;
+end
+
+% Time vector
+dt = 1/Fs;
+sizeX = size(Xd);
+for j = 1:sizeX(1)
+    for k = 1:sizeX(2)
+        tvec{j,k} = 0:dt:length(Xd{j,k})*dt-dt;
+    end
 end
 
 clear i j 
