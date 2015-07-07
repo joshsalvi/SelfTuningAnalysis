@@ -118,6 +118,7 @@ for j = raw
     k=k+1;
 end
 
+if exist('Fe')
 if size(Fe,1) > size(Xd,1)
     for j = 1:size(Xd,1)
         for k = nonraw
@@ -126,6 +127,7 @@ if size(Fe,1) > size(Xd,1)
         end
     end
     Fe = Fe2; clear Fe2
+end
 end
 
 

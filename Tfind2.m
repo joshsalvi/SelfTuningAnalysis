@@ -2,22 +2,129 @@ function Tfind2
 %Experimental data. All points files%%%%%%%%%%%%%%%%%
 %load('/Users/joshsalvi/Documents/Lab/Lab/Original/Paper/Raw Data/State Space Analysis/Controls/20130908-cell15-2.mat');
 %load('/Users/joshsalvi/Documents/Lab/Lab/Clamp Data/2014-08-05.01/Ear 1/Cell 11/20140805-cell11.mat');
-%load('/Users/joshsalvi/Documents/Lab/Lab/Original/Paper/Raw Data/State Space Analysis/Controls/Gentamicin/2014-08-05.01/Ear 1/Cell 4/20140805-cell4.mat')
-load('/Users/joshsalvi/Documents/Lab/Lab/Clamp Data/2014-12-18.01/Ear 1/Cell 1/Extracted Data.mat');
+load('/Users/joshsalvi/Documents/Lab/Lab/Clamp Data/2015-07-03.01/Ear 1/Cell 2/Extracted Data.mat')
+
+%Operating points in ascending order
+Fsort = sort(F_rand);
+Fgrid = Fsort(diff(Fsort) ~= 0);
+Fgrid(end+1) = max(F_rand);
+ksort = sort(k_rand);
+kgrid = ksort(diff(ksort) ~= 0);
+kgrid(end+1) = max(k_rand);
+
+Fgridrev = sort(Fgrid,'descend');
+
+sizeXd = size(Xd);
+
+if length(sizeXd) == 3
+    Np = sizeXd(2);
+    Nt = sizeXd(3);
+    Tstartend(1:2,1:Np,1:Nt) = zeros(2,Np,Nt);
+
+for Findex = 1:length(Fgrid)
+for kindex = 1:length(kgrid)
+    disp(['Findex: ' num2str(Findex) '  kindex: ' num2str(kindex)]);
+
+Npt = find(k_rand == kgrid(kindex) & F_rand == Fgridrev(Findex));
+if rem(Npt,Np) ~= 0;
+    Npulse = rem(Npt,Np);
+else
+    Npulse = Np;
+end  
+Ntrial = (Npt - Npulse)/Np + 1;
+Npt = (Ntrial-1)*Np+Npulse;
+
+X = Xd(:,Npulse,Ntrial);
+
+%Fs = Fs*1e-3;%kHz
+deltat = 1/(Fs*1e-3); %ms
+tvec = 0:deltat:(length(X)-1)*deltat;
+
+ssstartpt = 1;
+ssendpt = length(X);
+
+%Minimum window length allowed
+% CHOICE
+Tmin  = min([3000 tvec(ssendpt)]); %ms
+
+if tvec(ssendpt) - tvec(ssstartpt) >= Tmin
+tmax = tvec(ssendpt);
+tmin = tvec(ssstartpt);
+else
+tmax = tvec(ssendpt);
+tmin = tmax - Tmin;
+end
+
+XpsdpeakMax = 0;
+ratio = 0;
+nwins = 20;                 % number of windows to search
+%L1 = length(X)/10;
+L1 = tmax/2;
+deltaT = floor(L1/(nwins+1));
+tstart = L1 - deltaT;
+tend = L1 + deltaT;
 
 
+tstartnew = tmin;
+tendnew = tmax;
 
-XdL = length(Xd);
+winsearch = 1;
+if winsearch == 1
+    kk = 1;
+for m = nwins:-1:-nwins
+for l = -nwins:nwins
+    if tstart+l*deltaT >= tmin && tend+m*deltaT <= tmax && Tmin <= tend+m*deltaT - (tstart+l*deltaT)
+    [fpsdpeak, Xpsdpeak, XpsdmaximaMedian] = ssPSD(X,tstart+l*deltaT,tend+m*deltaT,Fs);
+    if Xpsdpeak/XpsdmaximaMedian > ratio
+        ratio = Xpsdpeak/XpsdmaximaMedian;
+        XpsdpeakMax = Xpsdpeak;
+        tstartnew = tstart + l*deltaT;
+        tendnew = tend + m*deltaT;
+        %'choice1'
+    elseif Xpsdpeak/XpsdmaximaMedian == ratio && Xpsdpeak > XpsdpeakMax
+        XpsdpeakMax = Xpsdpeak;
+        tstartnew = tstart + l*deltaT;
+        tendnew = tend + m*deltaT;
+        %'choice2'
+    elseif Xpsdpeak/XpsdmaximaMedian == ratio && Xpsdpeak == XpsdpeakMax && (tstartnew > tstart + l*deltaT || tendnew < tend + m*deltaT)
+        tstartnew = tstart + l*deltaT;
+        tendnew = tend + m*deltaT;
+        %'choice3'
+    end
+    end
+    %disp(['iter = ' num2str(kk) '/' num2str((2*nwins)^2)]);
+    %kk = kk + 1;
+end
+end
+end
 
+Tstartend(1,Npulse,Ntrial) = tstartnew;
+Tstartend(2,Npulse,Ntrial) = tendnew;
 
-    Tstartend(1:2,1:L) = zeros(2,L);
-for Findex = 1:XdL
+disp(['Tstart: ' num2str(tstartnew) '  Tend: ' num2str(tendnew)]);
 
+end
+end    
+    
+elseif length(sizeXd) == 2
+    Np = sizeXd(2);
+    Tstartend(1:2,1:Np) = zeros(2,Np);
+for Findex = 1:length(Fgrid)
+for kindex = 1:length(kgrid)
 
+Npt = find(k_rand == kgrid(kindex) & F_rand == Fgridrev(Findex));
+if rem(Npt,Np) ~= 0;
+    Npulse = rem(Npt,Np);
+else
+    Npulse = Np;
+end  
+Ntrial = (Npt - Npulse)/Np + 1;
+Npt = (Ntrial-1)*Np+Npulse;
 
-X = Xd{Findex};
+X = Xd(:,Npulse);
 
-deltat = 0.1;%ms
+%Fs = Fs*1e-3;%kHz
+deltat = 1/(Fs*1e-3); %ms
 tvec = 0:deltat:(length(X)-1)*deltat;
 
 ssstartpt = 1;
@@ -48,7 +155,7 @@ if winsearch == 1
 for m = 20:-1:-20
 for l = -20:20
     if tstart+l*deltaT >= tmin && tend+m*deltaT <= tmax && Tmin <= tend+m*deltaT - (tstart+l*deltaT)
-    [fpsdpeak, Xpsdpeak, XpsdmaximaMedian] = ssPSD(X,tstart+l*deltaT,tend+m*deltaT);
+    [fpsdpeak, Xpsdpeak, XpsdmaximaMedian] = ssPSD(X,tstart+l*deltaT,tend+m*deltaT,Fs);
     if Xpsdpeak/XpsdmaximaMedian > ratio
         ratio = Xpsdpeak/XpsdmaximaMedian;
         XpsdpeakMax = Xpsdpeak;
@@ -72,23 +179,24 @@ end
 
 Tstartend(1,Npulse,Ntrial) = tstartnew;
 Tstartend(2,Npulse,Ntrial) = tendnew;
+disp(['Tstart: ' num2str(tstartnew) 'Tend: ' num2str(tendnew)]);
+end
+end
 
 end
 
-
-
 %%%%%%%%%%%Save the time limits%%%%%%%%%%%
-timefile = '/Users/joshsalvi/Documents/Lab/Lab/Clamp Data/2014-12-18.01/Ear 1/Cell 1/tstartend.mat';
+timefile = '/Users/joshsalvi/Documents/Lab/Lab/Clamp Data/2015-07-03.01/Ear 1/Cell 2/Tstartend.mat';
 save(timefile, 'Tstartend');
 display('saving...');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 end
 
-function [fpsdpeak, Xpsdpeak, XpsdmaximaMedian] = ssPSD(X,tmanstart,tmanend)
+function [fpsdpeak, Xpsdpeak, XpsdmaximaMedian] = ssPSD(X,tmanstart,tmanend,Fs)
     
-deltat = 0.1;%ms
-Fs = 1/deltat;%kHz
+deltat = 1/(Fs*1e-3);%ms
+
 tvec = 0:deltat:(length(X)-1)*deltat;
 
 ssstartpt = find(abs(tvec-tmanstart)==min(abs(tvec-tmanstart)));
