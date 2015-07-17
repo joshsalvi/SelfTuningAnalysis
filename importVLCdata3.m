@@ -30,12 +30,12 @@ elseif MSVLC==2
     logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
     a = length(file);       % number of sessions in the directory
 end
-
+%{
 % Find all appropriate files
 file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
 logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
 a = length(file);       % number of sessions in the directory
-
+%}
 % Import logdata
 logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
 %comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
