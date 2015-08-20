@@ -1,4 +1,4 @@
-function XdVar(timeseries,window)
+function [MovVar]=XdVar(timeseries,window)
 %Running variance calculation
 endnum = length(timeseries)-window;
 
@@ -10,4 +10,5 @@ figure
 plot(MovVar)
 
 end
+
 
