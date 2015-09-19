@@ -42,7 +42,7 @@ if isstruct(logdata) == 0
 %    logdata.data = logdata;
 end
 if isempty('logdata.textdata(isnan(logdata.data(:,8))==0,3)')==0
- %   comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
+    comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
 end
 
 Fs = logdata.data(1,12);       % scan rate (Hz), CHECK THIS!

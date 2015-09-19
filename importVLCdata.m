@@ -44,47 +44,45 @@ pulse = logdata.data(1,23)*1e-3*Fs; % length of stimulus, CHECK THIS!
 % Import the data, some of this may be redundant
 for i = 1:a
 data=importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
+data2.data{i} = data.data;
+%{
 if a==1
-    data2.data(:,:,i)=data.data; 
+    data2.data{i}=data.data; 
 elseif i<a
-    data2.data(:,:,i)=data.data;    % assign with proper indexing
+    data2.data{i}=data.data;    % assign with proper indexing
 else
-    if length(data.data(:,1,1))<length(data2.data(:,1,1))   % search for length discrepancies and initialize with zeros
-        data.data(length(data2.data(:,1,1)),:)=0;
+    if length(data.data(:,1,1))<length(data2.data{1}(:,1))   % search for length discrepancies and initialize with zeros
+        data.data(length(data2.data{i}(:,1)),:)=0;
         for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
            data.data(:,j)=zeros(1,length(data2.data(:,:)));
         end
-        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
+        data2.data{i}=data.data(1:length(data2.data{i}(:,1)),:);
     else
-        for j = (length(data.data(1,:))+1):length(data2.data(1,:,(i-1)))
-           data.data(:,j)=zeros(1,length(data2.data(:,:)));
+        for j = (length(data.data(1,:))+1):length(data2.data{i-1}(1,:))
+           data.data(:,j)=zeros(1,length(data2.data{1}(:,:)));
         end
-        data2.data(:,:,i)=data.data(1:length(data2.data(:,1,1)),:);
+        data2.data{i}=data.data(1:length(data2.data{1}(:,1)),:);
     end
 end
- 
+%}
+time{i}=data2.data{i}(:,1); 
 end
 
-time = data2.data(:,1);    % time vector
-
-for i =1:a
-    data0(:,:,i)=data2.data(:,:,i);     % extract data from its structure format (not necessary, but easier)
-end
-clear data2 data 
+clear data 
 
 % Import time traces
 if MSVLC==1
     for j = 1:a
     for i = 1:(logdata.data(1,8))
-        Xd{i,j} = data0(:,(1+i),j);   % photodiode
-        Xo{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+        Xd{i,j} = data2.data{j}(:,(1+i));   % photodiode
+        Xo{i,j} = data2.data{j}(:,(1+logdata.data(1,8)+i));  % stimulus piezo
     end
     end
 elseif MSVLC==2
     for j = 1:a
     for i = 1:(logdata.data(1,8))
-        Xo{i,j} = data0(:,(1+i),j);   % photodiode
-        Xd{i,j} = data0(:,(1+logdata.data(1,8)+i),j);  % stimulus piezo
+        Xo{i,j} = data2.data{j}(:,(1+i));   % photodiode
+        Xd{i,j} = data2.data{j}(:,(1+logdata.data(1,8)+i));  % stimulus piezo
     end
     end
 end
