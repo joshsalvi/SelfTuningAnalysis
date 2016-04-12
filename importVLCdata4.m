@@ -95,7 +95,7 @@ for j = raw
     k=k+1;
 end
 % Extract pulses from full time traces
-%{
+
 k=1;
 for j = raw
     for i = 1:size(Xd,1)

@@ -454,10 +454,10 @@ else
     CI95 = confint(fitobj);
     CI95_int = (CI95(2,:)-CI95(1,:))/2;
     % Convert confidence intervals into standard errors
-    tstatrange = linspace(-10,10,1e4);
+    tstatrange = linspace(-10,10,1e5);
     tpdf0 = tpdf(tstatrange,length(aa)-2);
     tcdf0 = cumtrapz(tstatrange,tpdf0);
-    qrt = findnearest(tcdf0,0.95);qrt=qrt(1);
+    qrt = findnearest(tcdf0,0.975);qrt=qrt(1);
     tstat_df = tstatrange(qrt);
     SE_params = CI95_int./tstat_df;
     
