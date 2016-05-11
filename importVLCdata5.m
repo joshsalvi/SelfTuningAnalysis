@@ -52,6 +52,7 @@ end
 file = dir(sprintf('%s%s',datapath,'*VLC*.txt'));   % find all data files
 logfile = dir(sprintf('%s%s',datapath,'*.log'));    % find the logfile
 a = length(file);       % number of sessions in the directory
+logfilekey = '/Users/joshsalvi/Documents/Lab/Lab/VLClogfilekey.xlsx';
 if a == 0
     disp('No files found. Aborting.');
     return;
@@ -60,7 +61,7 @@ end
 % Import logdata
 try
     logdata = importdata(sprintf('%s%s',datapath,logfile.name));  % logdata.data contains log data of interest
-    logstruc = getVLClog(datapath);
+    logstruc = getVLClog(datapath,logdata,logfilekey);
 catch
     disp('No logfile found. Aborting.');
     return;
@@ -71,14 +72,25 @@ if isstruct(logdata) == 0
 end
 if isempty('logdata.textdata(isnan(logdata.data(:,8))==0,3)')==0
     try
-        comments = logdata.textdata(isnan(logdata.data(:,8))==0,3); % import comments
+        comments = logdata.textdata(:,3); % import comments
+    catch
+        disp('Cannot import comments.')
     end
 end
 
 % Label the comments
+m=1;
 for j = 1:length(comments)
     try
-        comments{j} = ['(' num2str(j) '): ' comments{j}];
+        if isempty(comments{j})
+        else
+            try
+                comments{j} = ['(' num2str(m) '): ' comments{j}];
+                m=m+1;
+            catch
+            end
+        end
+    catch
     end
 end
 
@@ -113,11 +125,15 @@ end
 
 
 % Find all raw files
+rawfiles = zeros(1,a);
 for j = 1:a
     try
         rawfiles(j) = isempty(findstr(file(j).name,'raw'));
+    catch
+        disp('Unable to find RAW files.');
     end
 end
+
 try
     nonraw = find(rawfiles==1);raw = find(rawfiles==0);
     ntraceraw = ntrace(ntrace~=0);
@@ -128,158 +144,221 @@ catch
 end
 
 % Import the data, some of this may be redundant
+data2 = cell(1,a);
+data0 = cell(1,a);
 for i = 1:a
     try
         data2{i} = importdata(sprintf('%s%s',datapath,file(i).name));   % initial import
         data0{i} = data2{i}.data;
+    catch
     end
 end
 clear data2 data 
 
 % Import each average of the time traces
 k=1;
-try
+
 while length(numavg) < a
     numavg(end+1) = numavg(end);
 end
+
+% Pre-allocate variables
+Xd = cell(max(numavg),a);
+Xo = cell(max(numavg),a);
+Xc = cell(max(numavg),a);
+kv = cell(max(numavg),a);
+mv = cell(max(numavg),a);
+gv = cell(max(numavg),a);
+Fe = cell(max(numavg),a);
+
 for j = 1:a
-    xL = length(data0{j})/numavg(k);
-    m=1;
-    for i = 1:numavg(k)
+    xL = length(data0{j})/numavg(j);   
+    for i = 1:numavg(j)
+        m=1;
         try
             if isempty(intersect(varsincluded,1)) == 0
                 Xd{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
+        
         try
             if isempty(intersect(varsincluded,2)) == 0
                 Xo{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         try
             if isempty(intersect(varsincluded,3)) == 0
                 Xc{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         try
             if isempty(intersect(varsincluded,4)) == 0
                 kv{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         try
             if isempty(intersect(varsincluded,5)) == 0
                 Fe{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         try
             if isempty(intersect(varsincluded,6)) == 0
                 mv{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         try
             if isempty(intersect(varsincluded,7)) == 0
                 gv{i,j} = data0{j}(1+(i-1)*xL:i*xL,m);
                 m = m + 1;
             end
+        catch
         end
         
         k=k+1;
     end
 end
-end
+
 % Extract raw pulses from full time traces
-k=1;
-try
-while length(ntraceraw) < length(raw)
-    ntraceraw(end+1) = ntraceraw(end);  % Check that ntraceraw is correct length
-end
-for j = raw
-    xL2 = length(data0{j})/ntraceraw(k);
-    for i = 1:numavg(k)
-        for l = 1:ntraceraw(k)
-            try
-                Xd_pulse{i,j}(:,l) = Xd{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Xo_pulse{i,j}(:,l) = Xo{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Xc_pulse{i,j}(:,l) = Xc{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                kv_pulse{i,j}(:,l) = kv{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Fe_pulse{i,j}(:,l) = Fe{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                mv_pulse{i,j}(:,l) = mv{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                gv_pulse{i,j}(:,l) = gv{i,j}(1+(l-1)*xL2:l*xL2);
+try    
+    while length(ntraceraw) < length(raw)
+        ntraceraw(end+1) = ntraceraw(end);  % Check that ntraceraw is correct length
+    end
+
+    k=1;
+    % Pre-allocate pulse variables
+    Xd_pulse = cell(max(numavg),max(raw));
+    Xo_pulse = cell(max(numavg),max(raw));
+    Xc_pulse = cell(max(numavg),max(raw));
+    kv_pulse = cell(max(numavg),max(raw));
+    mv_pulse = cell(max(numavg),max(raw));
+    Fe_pulse = cell(max(numavg),max(raw));
+    gv_pulse = cell(max(numavg),max(raw));
+
+    % Define pulse variables
+    for j = raw
+        for i = 1:numavg(k)
+            xL2 = length(Xd{j})/ntraceraw(k);
+            for l = 1:ntraceraw(k)
+                try
+                    Xd_pulse{i,j}(:,l) = Xd{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Xo_pulse{i,j}(:,l) = Xo{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Xc_pulse{i,j}(:,l) = Xc{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    kv_pulse{i,j}(:,l) = kv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Fe_pulse{i,j}(:,l) = Fe{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    mv_pulse{i,j}(:,l) = mv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    gv_pulse{i,j}(:,l) = gv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
             end
         end
+        k=k+1;
     end
-    k=k+1;
-end
 catch
     disp('Unable to import raw time series.');
 end
-try
+
 % Extract non-raw pulses from full time traces
-k=1;
-while length(ntrace) < length(nonraw)
-    ntrace(end+1) = ntrace(end);
-end
-for j = nonraw
-    xL2 = length(data0{j})/ntrace(k);
-    for i = 1:numavg(k)
-        for l = 1:ntrace(k)
-            try
-                Xd_pulse_avg{i,j}(:,l) = Xd{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Xo_pulse_avg{i,j}(:,l) = Xo{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Xc_pulse_avg{i,j}(:,l) = Xc{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                kv_pulse_avg{i,j}(:,l) = kv{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                Fe_pulse_avg{i,j}(:,l) = Fe{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                mv_pulse_avg{i,j}(:,l) = mv{i,j}(1+(l-1)*xL2:l*xL2);
-            end
-            try
-                gv_pulse_avg{i,j}(:,l) = gv{i,j}(1+(l-1)*xL2:l*xL2);
+try
+    k=1;
+    while length(ntrace) < length(nonraw)
+        ntrace(end+1) = ntrace(end);
+    end
+
+    % Pre-allocate averaged variables
+    Xd_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    Xo_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    Xc_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    Fe_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    kv_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    mv_pulse_avg = cell(max(numavg(k),max(nonraw)));
+    gv_pulse_avg = cell(max(numavg(k),max(nonraw)));
+
+    % Define averaged variables
+    for j = nonraw
+        xL2 = length(data0{j})/ntrace(k);
+        for i = 1:numavg(k)
+            for l = 1:ntrace(k)
+                try
+                    Xd_pulse_avg{i,j}(:,l) = Xd{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Xo_pulse_avg{i,j}(:,l) = Xo{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Xc_pulse_avg{i,j}(:,l) = Xc{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    kv_pulse_avg{i,j}(:,l) = kv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    Fe_pulse_avg{i,j}(:,l) = Fe{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    mv_pulse_avg{i,j}(:,l) = mv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
+                try
+                    gv_pulse_avg{i,j}(:,l) = gv{i,j}(1+(l-1)*xL2:l*xL2);
+                catch
+                end
             end
         end
-    end
-    k=k+1;
+        k=k+1;
     end
 catch
     disp('Unable to import non-raw time series.');
 end
 
+
 % Time vector
 dt = 1/Fs;
 sizeX = size(Xd);
+tvec = cell(sizeX(1),sizeX(2));
+tvec_pulse = cell(sizeX(1),sizeX(2));
 for j = 1:sizeX(1)
     for k = 1:sizeX(2)
         try
             tvec{j,k} = 0:dt:length(Xd{j,k})*dt-dt;
+        catch
         end
         try
             tvec_pulse{j,k} = 0:dt:length(Xd_pulse{j,k})*dt-dt;
+        catch
         end
     end
 end
@@ -300,52 +379,44 @@ end
 %%%%%%%%%%%%%%%%%%  getVLClog()  %%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function S = getVLClog(datapath,logfilepath)
+function S = getVLClog(datapath,logdata,logfilepath)
 
 % Log file path
-if nargin < 2 || isempty(logfilepath)
-    LFP = fullfile('/Volumes/Data','log file key.xlsx');
+if nargin < 3 || isempty(logfilepath)
+    LFP = '/Users/joshsalvi/Documents/Lab/Lab/VLClogfilekey.xlsx';
 else
     LFP = logfilepath;
 end
 
 % Import fieldnames
-FNames = local_xls2fields(LFP,1,'D:D');
-FNames = FNames(2:end);
+FNames = local_xls2fields(LFP,1,'A:EZ');
+FNames = FNames(4:end);
+FNames = unique(FNames,'stable');
 Nfields = numel(FNames); % number of fields, some fields of arbitrary length
-ilastvarlength = find(~cellfun(@isempty,strfind(FNames,'sizeOfStateSpaceFreqIncArray'))); % last index before varying length parameters
+ilastvarlength = find(~cellfun(@isempty,strfind(FNames,'sizeOfStateSpaceFreqIncArray')), 1); % last index before varying length parameters
 
 % Create file identifier for log file and open it
 logfile = dir(sprintf('%s%s',datapath,'*.log')); % find the logfile
 FN = fullfile(datapath,logfile.name);
 fileID = fopen(FN);
-
+if isempty(ilastvarlength)
+    ilastvarlength = 5;
+end
 % No header line needs to be read in these log files.
 
 % Generate an empty struct with field names as specified
 S = cell2struct(repmat({[]},1,Nfields),FNames,2); S(:) = [];
-
-% Run while loop "forever", endpoint is not known
-while true
-    startFormatSpec = ['%s %s %s' repmat(' %f',[1,ilastvarlength-3])];
-    Data = textscan(fileID,startFormatSpec,1,'Delimiter','\t'); % start of dataline
-    if isempty(Data{1}), break, end % if empty values are found, time to quit loop
-    for ii = 9:-1:0 % hardcoded, needs updating when log file (key) is changed
-        Dval = Data{ilastvarlength-ii};
-        if Dval > 0
-            loopFormatSpec = repmat('%f ',[1,Dval]); % loop over data of variable length
-            DataLoop = textscan(fileID,loopFormatSpec,1,'Delimiter','\t'); % looping on data line
-            Data{end+1} = cell2mat(DataLoop); %#ok<AGROW> % add looped data to existing data line
-        else
-            Data{end+1} = NaN; %#ok<AGROW>
-        end
+fields = fieldnames(S);
+for j = 1:size(logdata.data,1);
+    for k = 1:numel(fields)
+        S(j).(fields{k}) = logdata.data(j,k);
     end
-    S(end+1) = cell2struct(Data,FNames,2); %#ok<AGROW> % assign data to struct
 end
 
 % Close file
 fclose(fileID);
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%  local_xls2fields()  %%%%%%%%%%%%%%%%%
