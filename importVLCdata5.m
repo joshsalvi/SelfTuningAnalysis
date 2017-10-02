@@ -249,7 +249,7 @@ try
     % Define pulse variables
     for j = raw
         for i = 1:numavg(k)
-            xL2 = length(Xd{j})/ntraceraw(k);
+            xL2 = floor(length(Xd{j})/ntraceraw(k));
             for l = 1:ntraceraw(k)
                 try
                     Xd_pulse{i,j}(:,l) = Xd{i,j}(1+(l-1)*xL2:l*xL2);
